@@ -25,14 +25,20 @@
  * SubString is a object to manage a const string
  * It is useful for getting substrings inside const string, allowing easier string comparison.
  * members of class are char pointer and size,
- * pointer can be null.
- * size being zero inidcated that string is zero end
+ * pointer can be null but size 0 has to be passed to constructor.
  */
+
 class SubString
 {
 	const char* start;    //!< pointer to first character of string
 	size_t len;         //!< size of string
 public:
+	/// default constructor create a not valid and empty string
+	SubString() :
+			start(nullptr), len(0)
+	{
+
+	}
 	//! Copy constructor
 	SubString(const SubString &str) :
 			start(str.start), len(str.len)
@@ -91,7 +97,7 @@ public:
 		return
 		{	start,len};
 	}
-	 /// destructor nothing to clear
+	/// destructor nothing to clear
 	~SubString()
 	{
 	}
@@ -106,7 +112,7 @@ public:
 	/// Compare again string
 	bool operator ==(const std::string str) const
 	{
-		return len == str.length() && str.compare(0,len,start);
+		return len == str.length() && str.compare(0, len, start);
 	}
 
 	/** Equal-to operator SubString object
@@ -153,6 +159,14 @@ public:
 	{
 		return out.write(str.start, str.len);
 	}
+	/**
+	 * check if subtring point to a valid one and not empty
+	 */
+	bool good() const
+	{
+		return start != nullptr;
+	}
+
 };
 
 #endif /* SUBSTRING_H_ */

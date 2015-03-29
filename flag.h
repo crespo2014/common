@@ -23,15 +23,12 @@ public:
 
     }
     bool is(B bit) const {
-        static_assert((1<< bit) <= std::numeric_limits<S>::max(),"There is not enough space to hold this flag");
         return ((flag & (1 << bit)) != 0);
     }
     void set(B bit) {
-        static_assert((1<< bit) <= std::numeric_limits<S>::max(),"There is not enough space to hold this flag");
         flag |= (1 << bit);
     }
     void clear(B bit) {
-        static_assert((1<< bit) <= std::numeric_limits<S>::max(),"There is not enough space to hold this flag");
         flag &= ~(1 << bit);
     }
 };

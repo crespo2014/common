@@ -1,5 +1,7 @@
 
 # targets define different output targets.
+# common_cl				define common compiler flags for all targets
+# common_inc			define common include files for all targets
 # <target_name>_src_dir define directory containing all file for target
 # <target_name>_src     define cpp and c files for target
 # <target>_cpp    define all cpp flags for target

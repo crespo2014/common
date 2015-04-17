@@ -55,16 +55,15 @@ struct s_task
 {
 	const char* name;
 	const char* depends_on;
-} task_list = { {nullptr,nullptr}, { "a", nullptr }, { "b", "a" }, { "c", "b" }, { "d", "b" } };
+} task_list[] = { { "a", 0 }, { "b", "a" }, { "c", "b" }, { "d", "b" } };
 
 /**
  * at least one element has to be in the list in the position 0 that never executes
  */
 struct task_data
 {
-	const char * name;
-	void* ptr;
-	unsigned waiting_for_idx; // 0 ready,  1:end_idx waiting , > end_idx : lowest priority
+	struct s_task* ptr;			// ptr to static task
+	struct s_task* waiting_for;	// 0 ready,  1:end_idx waiting , > end_idx : lowest priority
 };
 
 /**
@@ -75,46 +74,47 @@ struct task_data
  * threads end when waiting == 0
  * last thread is when running became 0
  */
+#define MAX_TASKS 100
 struct depends_list
 {
 	unsigned locked_idx;	// last task waiting to be release
 	unsigned running_idx;	// the last task running
 	unsigned end_idx;		// last element on the list
 	unsigned unlocked;		// how many task are ready for execution
-	unsigned idx_list[100];	// for test purpose
+	//unsigned idx_list[MAX_TASKS];		// index to task, allow to change the list
+	struct task_data task[MAX_TASKS];
 };
 
 struct depends_list depends;
-struct task_data task[100];
-unsigned max_task;
 
 /**
  * Mark task as done and get
  * Get a task from the list for execution
  * 0 - no more task available
  */
-unsigned TaskDone(unsigned prev_id = 0)
+struct s_task* TaskDone(struct s_task* prev_task)
 {
 	unsigned i, j;
+	struct task_data task;
 	// spin lock
-	if (prev_id != 0)
+	if (prev_task != 0)
 	{
 		for (i = depends.running_idx; i < depends.end_idx; ++i)
 		{
-			if (depends.idx_list[i] == prev_id)
+			if (depends.task[i].ptr == prev_task)
 			{
 				// bring down a task to do
 				--depends.running_idx;
-				depends.idx_list[i] = depends.idx_list[depends.running_idx];
+				depends.task[i] = depends.task[depends.running_idx];
 				break;
 			}
 		}
 		// release all task that depends on the finished one and remember
 		for (i = 0; i < depends.locked_idx; ++i)
 		{
-			if (task[depends.idx_list[i]].waiting_for_idx == prev_id)
+			if (depends.task[i].waiting_for == prev_task)
 			{
-				task[depends.idx_list[i]].waiting_for_idx = 0;
+				depends.task[i].waiting_for = 0;
 				depends.unlocked++;
 			}
 		}
@@ -124,7 +124,7 @@ unsigned TaskDone(unsigned prev_id = 0)
 	{
 		for (i = 0; i < depends.locked_idx; ++i)
 		{
-			task[depends.idx_list[i]].waiting_for_idx = 0;
+			depends.task[i].waiting_for = 0;
 			depends.unlocked++;
 		}
 	}
@@ -132,17 +132,21 @@ unsigned TaskDone(unsigned prev_id = 0)
 	if (depends.unlocked)
 	{
 		// find the lower id task available
-		j = depends.end_idx;
+		prev_task = task_list + depends.end_idx;
+		j = 0;
 		for (i = 0; i < depends.locked_idx; ++i)
 		{
-			if (task[depends.idx_list[i]].waiting_for_idx == 0 && depends.idx_list[i] < j)
-				j = depends.idx_list[i];
+			if (depends.task[i].waiting_for == 0 && depends.task[i].ptr < prev_task)
+			{
+				prev_task = depends.task[i].ptr;
+				j = i;
+			}
 		}
 		--depends.unlocked;
 		--depends.locked_idx;
-		prev_id = depends.idx_list[j];
-		depends.idx_list[j] = depends.idx_list[depends.locked_idx];
-		depends.idx_list[depends.locked_idx] = prev_id;
+		task = depends.task[j];
+		depends.task[j] = depends.task[depends.locked_idx];
+		depends.task[depends.locked_idx] = task;
 	} else
 	{
 		// check end of all task
@@ -150,19 +154,24 @@ unsigned TaskDone(unsigned prev_id = 0)
 		{
 			// clean up all
 		}
-		prev_id = 0;
+		prev_task = 0;
 	}
 	// spin unlock
-	return prev_id;
+	return prev_task;
 }
 
 void Prepare(struct s_task* alltask, unsigned count)
 {
 	// fill dependencies structure
 	unsigned i;
+	depends.end_idx = count;
+	depends.locked_idx =count;
+	depends.running_idx =count;
+	depends.unlocked = 0;
 	for (i = 0; i < count; ++i)
 	{
-		depends.idx_list[i] = i+1;
+		depends.task[i].ptr = alltask + i;
+		depends.task[i].waiting_for = 0;
 	}
 	// resolve dependencies
 	for (i = 0; i < count; ++i)

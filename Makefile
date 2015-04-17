@@ -12,6 +12,9 @@
 # srcs 			all sources files
 
 OBJCOPY := objcopy
+build_dir ?= .
+
+all : $(targets)
 
 #Look for all cpp files in a folder and return as build/%.o
 find-cpp-o =  $(addprefix $(build_dir)/,$(patsubst %.cpp,%.o,$(foreach d,$(1),$(wildcard $(d)/*.cpp))))
@@ -23,10 +26,10 @@ find-c-o =  $(addprefix $(build_dir)/,$(patsubst %.c,%.o,$(foreach d,$(1),$(wild
 get-o = $(addprefix $(build_dir)/,$(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$1)))
 
 #Look for all c and cpp files in a folder and return as build/%.o
-find-o = $(call find-cpp-o,$(1)) $(call find-c-o,$(1))
+find-o = $(call find-cpp-o,$(1)) $(call find-c-o,$(1)) 
 
-c_files := $(foreach d,$(src_dirs),$(wildcard $(d)/*.c))
-cpp_files := $(foreach d,$(src_dirs),$(wildcard $(d)/*.cpp))
+c_files := $(foreach d,$(src_dirs),$(wildcard $(d)/*.c)) $(filter %.c,$(srcs))
+cpp_files := $(foreach d,$(src_dirs),$(wildcard $(d)/*.cpp)) $(filter %.cpp,$(srcs))
 
 # List of all targets that will be built, with path of build directory prepended
 all:   $(addprefix $(build_dir)/,$(targets)) 

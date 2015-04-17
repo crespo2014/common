@@ -182,7 +182,7 @@ void Prepare(struct s_task* alltask, unsigned count)
 		{
 			for (j = 0; j < count; ++j)
 			{
-				if (strcmp(alltask[j].name,depends.task[i].ptr->depends_on) == 0)
+				if (strcmp(alltask[j].name, depends.task[i].ptr->depends_on) == 0)
 				{
 					depends.task[i].waiting_for = alltask + j;
 					break;
@@ -191,8 +191,7 @@ void Prepare(struct s_task* alltask, unsigned count)
 			// dependency not found, move task to the end
 			if (depends.task[i].waiting_for == 0)
 				depends.task[i].waiting_for = alltask + count;
-		}
-		else
+		} else
 			depends.waiting++;			// avoid bug,
 	}
 }
@@ -206,24 +205,67 @@ void WorkingThread()
 		if (task != 0)
 		{
 			// task doit
-			printf("%s done\n",task->name);
-		}
-		else
+			printf("%s done\n", task->name);
+		} else
 		{
 			//wait for (depends.unlocked !=0 or depends.waiting_last == 0)
 		}
-	} while(depends.waiting_last != 0);	// something to do
+	} while (depends.waiting_last != 0);	// something to do
 }
 
 #ifdef TEST
+#define DOIT(x) do { printf("...\n"); Prepare(x,sizeof(x)/sizeof(*x)); WorkingThread(); } while(0)
+
 int main()
 {
-	struct s_task list1[] = { { "a", 0 }, { "b", "a" }, { "c", "b" }, { "d", "b" } };
-	struct s_task list2[] = { { "a", 0 }, { "b",0 }, { "c", 0 }, { "d", 0 } };
-	struct s_task list3[] = { { "a", 0 } };
+	// single
+	struct s_task list1[] =
+	{
+		{	"a", 0},
+		{	"b", "a"},
+		{	"c", "b"},
+		{	"d", "b"}};
+	// keep order for single thread but can be all together
+	struct s_task list2[] =
+	{
+		{	"a", 0},
+		{	"b",0},
+		{	"c", 0},
+		{	"d", 0}};
+	// order is keep because dependences are resolved on time
+	struct s_task list3[] =
+	{
+		{	"a",0},
+		{	"b","a"},
+		{	"c","b"},
+		{	"d",0},
+		{	"e", 0}};
 
-	Prepare(list1,sizeof(list1)/sizeof(*list1));
-	WorkingThread();
+	struct s_task list4[] =
+	{
+		{	"a",0},
+		{	"d",0},
+		{	"e",0}
+		{	"b","a"},
+		{	"c","b"}
+
+	};
+
+	//
+	struct s_task list5[] =
+	{
+		{	"a", 0}};
+
+	DOIT(list1);
+	DOIT(list2);
+	DOIT(list3);
+	DOIT(list4);
+//	Prepare(list1,sizeof(list1)/sizeof(*list1));
+//	WorkingThread();
+//	Prepare(list2,sizeof(list2)/sizeof(*list2));
+//	WorkingThread();
+//	Prepare(list3,sizeof(list3)/sizeof(*list));
+//	WorkingThread();
 
 }
 #endif

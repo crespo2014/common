@@ -53,7 +53,7 @@ struct s_task
 {
 	const char* name;
 	const char* depends_on;
-} task_list[] = { { "a", 0 }, { "b", "a" }, { "c", "b" }, { "d", "b" } };
+};
 
 /**
  * at least one element has to be in the list in the position 0 that never executes
@@ -80,6 +80,7 @@ struct depends_list
 	unsigned end_idx;		// last element on the list
 	unsigned waiting;		// how many task are ready to be executed
 	struct task_data task[MAX_TASKS];
+	struct s_task* stask;	// static task structure
 };
 
 struct depends_list depends;
@@ -130,7 +131,7 @@ struct s_task* TaskDone(struct s_task* prev_task)
 	if (depends.waiting)
 	{
 		// find the lower id task available
-		prev_task = task_list + depends.end_idx;
+		prev_task = depends.stask + depends.end_idx;
 		j = 0;
 		for (i = 0; i < depends.waiting_last; ++i)
 		{
@@ -166,6 +167,7 @@ void Prepare(struct s_task* alltask, unsigned count)
 	depends.waiting_last = count;
 	depends.running_idx = count;
 	depends.waiting = 0;
+	depends.stask = alltask;
 	for (i = 0; i < count; ++i)
 	{
 		depends.task[i].ptr = alltask + i;
@@ -208,6 +210,11 @@ void WorkingThread()
 #ifdef TEST
 int main()
 {
+	struct s_task list1[] = { { "a", 0 }, { "b", "a" }, { "c", "b" }, { "d", "b" } };
+	struct s_task list2[] = { { "a", 0 }, { "b",0 }, { "c", 0 }, { "d", 0 } };
+	struct s_task list3[] = { { "a", 0 } };
+
+	Prepare(list1,sizeof(list1)/sizeof(*list1));
 
 }
 #endif

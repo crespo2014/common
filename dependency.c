@@ -99,7 +99,7 @@ struct s_task* TaskDone(struct s_task* prev_task)
 	// spin lock
 	if (prev_task != 0)
 	{
-		for (i = depends.waiting_last; i < depends.end_idx; ++i)
+		for (i = depends.waiting_last; i < depends.running_last; ++i)
 		{
 			if (depends.task[i].ptr == prev_task)
 			{

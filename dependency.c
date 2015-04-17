@@ -110,6 +110,15 @@ unsigned TaskDone(unsigned prev_id = 0)
 			}
 		}
 	}
+	// check if not running task and not pending one
+	if (depends.running_idx == depends.locked_idx && depends.unlocked == 0)
+	{
+		for (i = 0; i < depends.locked_idx; ++i)
+		{
+			task[depends.idx_list[i]].waiting_for_idx = 0;
+			depends.unlocked++;
+		}
+	}
 	// pick a new task
 	if (depends.unlocked)
 	{
@@ -121,9 +130,15 @@ unsigned TaskDone(unsigned prev_id = 0)
 		prev_id = depends.idx_list[i];
 		depends.idx_list[i] = depends.idx_list[depends.locked_idx];
 		depends.idx_list[depends.locked_idx] = prev_id;
-	}
-	else
+	} else
+	{
+		// check end of all task
+		if (depends.running_idx == 0)
+		{
+			// clean up all
+		}
 		prev_id = 0;
+	}
 	// spin unlock
 	return prev_id;
 }

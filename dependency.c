@@ -122,6 +122,7 @@ struct s_task* TaskDone(struct s_task* prev_task)
 	// check if not running task and not pending one
 	if (depends.running_idx == depends.locked_idx && depends.unlocked == 0)
 	{
+		// the unlock all task, maybe is better execute one by one task that we do not known what it depends on
 		for (i = 0; i < depends.locked_idx; ++i)
 		{
 			depends.task[i].waiting_for = 0;
@@ -163,21 +164,37 @@ struct s_task* TaskDone(struct s_task* prev_task)
 void Prepare(struct s_task* alltask, unsigned count)
 {
 	// fill dependencies structure
-	unsigned i;
+	unsigned i, j;
 	depends.end_idx = count;
-	depends.locked_idx =count;
-	depends.running_idx =count;
+	depends.locked_idx = count;
+	depends.running_idx = count;
 	depends.unlocked = 0;
 	for (i = 0; i < count; ++i)
 	{
 		depends.task[i].ptr = alltask + i;
-		depends.task[i].waiting_for = 0;
+		depends.task[i].waiting_for = alltask + count;	// no task
 	}
 	// resolve dependencies
 	for (i = 0; i < count; ++i)
 	{
-
+		if (depends.task[i].ptr->depends_on != 0)
+		{
+			for (j = 0; j < count; ++j)
+			{
+				if (strcmp(alltask[j].name,depends.task[i].ptr->depends_on) == 0)
+				{
+					depends.task[i].waiting_for = alltask + j;
+					break;
+				}
+			}
+		}
 	}
+}
+
+void WorkingThread()
+{
+	struct s_task* task = 0;
+
 }
 
 #ifdef TEST

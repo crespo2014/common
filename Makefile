@@ -7,6 +7,7 @@
 # <target>_cpp    define all cpp flags for target
 # <target>_ld     define all ld flags for target
 # common_cpp	define common cpp flags
+# common_c		define common c flags
 # common_ld		define common ld flags
 # src_dirs      all directories containing source files
 # srcs 			all sources files
@@ -95,10 +96,10 @@ define cpp-file-target-rule
 $(build_dir)/$(1:%.cpp=%.o).$(2)_$(3): $(1) |  $(dir $(build_dir)/$(1))
  
 #	$(Q)echo "$(build_dir)/$(1).$(2)$(3).d"
-	$(Q)$(CXX) -MM $($(3)_cpp) $(common_cpp) $($(2)_cpp) -MT "$(build_dir)/$(1:%.cpp=%.o).$(2)_$(3)" -MMD -MP -MF "$(build_dir)/$(1).$(2)_$(3).d"  $(1)
+	$(Q)$(CXX) -MM $($(3)_cpp) $(common_cl) $(common_cpp) $($(2)_cpp) -MT "$(build_dir)/$(1:%.cpp=%.o).$(2)_$(3)" -MMD -MP -MF "$(build_dir)/$(1).$(2)_$(3).d"  $(1)
 	
 #	$(Q)echo "$$(@F)"
-	$(Q)$(CXX) -c $($(3)_cpp) $(common_cpp) $($(2)_cpp) -o $$@  $(1)
+	$(Q)$(CXX) -c $($(3)_cpp)  $(common_cl) $(common_cpp) $($(2)_cpp) -o $$@  $(1)
 
 -include $(build_dir)/$(1).$(2)_$(3).d
 
@@ -114,10 +115,10 @@ define c-file-target-rule
 $(build_dir)/$(1:%.c=%.o).$(2)_$(3): $(1)  |  $(dir $(build_dir)/$(1))
 
 #	$(Q)echo "$(build_dir)/$(1).$(2)$(3).d"
-	$(Q)$(CC) -MM $($(3)_cpp) $(common_cpp) $($(2)_cpp) -MT "$(build_dir)/$(1:%.c=%.o).$(2)_$(3)" -MMD -MP -MF "$(build_dir)/$(1).$(2)_$(3).d"  $(1)
+	$(Q)$(CC) -MM $($(3)_cpp) $(common_cl) $(common_c) $($(2)_cpp) -MT "$(build_dir)/$(1:%.c=%.o).$(2)_$(3)" -MMD -MP -MF "$(build_dir)/$(1).$(2)_$(3).d"  $(1)
 	
 #	$(Q)echo "$$(@F)"
-	$(Q)$(CC) -c  $($(3)_cpp) $(common_cpp) $($(2)_cpp)  -o $$@  $(1)
+	$(Q)$(CC) -c  $($(3)_cpp)  $(common_cl) $(common_c) $($(2)_cpp)  -o $$@  $(1)
 
 -include $(build_dir)/$(1).$(2)_$(3).d
 

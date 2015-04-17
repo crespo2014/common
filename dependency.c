@@ -78,7 +78,7 @@ struct task_data
 struct depends_list
 {
 	unsigned waiting_last;	// last task waiting to be release
-	unsigned running_idx;	// the last task running
+	unsigned running_last;	// the last task running
 	unsigned end_idx;		// last element on the list
 	unsigned waiting;		// how many task are ready to be executed
 	struct task_data task[MAX_TASKS];
@@ -104,8 +104,8 @@ struct s_task* TaskDone(struct s_task* prev_task)
 			if (depends.task[i].ptr == prev_task)
 			{
 				// bring down a task to do
-				--depends.running_idx;
-				depends.task[i] = depends.task[depends.running_idx];
+				--depends.running_last;
+				depends.task[i] = depends.task[depends.running_last];
 				break;
 			}
 		}
@@ -120,7 +120,7 @@ struct s_task* TaskDone(struct s_task* prev_task)
 		}
 	}
 	// check if not running task and not pending one
-	if (depends.running_idx == depends.waiting_last && depends.waiting == 0)
+	if (depends.running_last == depends.waiting_last && depends.waiting == 0)
 	{
 		// the unlock all task, maybe is better execute one by one task that we do not known what it depends on
 		for (i = 0; i < depends.waiting_last; ++i)
@@ -151,7 +151,7 @@ struct s_task* TaskDone(struct s_task* prev_task)
 	} else
 	{
 		// check end of all task
-		if (depends.running_idx == 0)
+		if (depends.running_last == 0)
 		{
 			// clean up all
 		}
@@ -167,7 +167,7 @@ void Prepare(struct s_task* alltask, unsigned count)
 	unsigned i, j;
 	depends.end_idx = count;
 	depends.waiting_last = count;
-	depends.running_idx = count;
+	depends.running_last = count;
 	depends.waiting = 0;
 	depends.stask = alltask;
 	for (i = 0; i < count; ++i)

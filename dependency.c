@@ -99,7 +99,7 @@ struct s_task* TaskDone(struct s_task* prev_task)
 	// spin lock
 	if (prev_task != 0)
 	{
-		for (i = depends.running_idx; i < depends.end_idx; ++i)
+		for (i = depends.waiting_last; i < depends.end_idx; ++i)
 		{
 			if (depends.task[i].ptr == prev_task)
 			{
@@ -173,7 +173,7 @@ void Prepare(struct s_task* alltask, unsigned count)
 	for (i = 0; i < count; ++i)
 	{
 		depends.task[i].ptr = alltask + i;
-		depends.task[i].waiting_for = alltask + count;	// no task
+		depends.task[i].waiting_for = 0;
 	}
 	// resolve dependencies
 	for (i = 0; i < count; ++i)
@@ -188,6 +188,9 @@ void Prepare(struct s_task* alltask, unsigned count)
 					break;
 				}
 			}
+			// dependency not found, move task to the end
+			if (depends.task[i].waiting_for == 0)
+				depends.task[i].waiting_for = alltask + count;
 		}
 		else
 			depends.waiting++;			// avoid bug,

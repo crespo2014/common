@@ -49,6 +49,15 @@
  */
 
 /**
+ * Static struct holding all data
+ */
+struct s_task
+{
+	const char* name;
+	const char* depends_on;
+} task_list = { {nullptr,nullptr}, { "a", nullptr }, { "b", "a" }, { "c", "b" }, { "d", "b" } };
+
+/**
  * at least one element has to be in the list in the position 0 that never executes
  */
 struct task_data
@@ -86,7 +95,7 @@ unsigned max_task;
  */
 unsigned TaskDone(unsigned prev_id = 0)
 {
-	unsigned i;
+	unsigned i, j;
 	// spin lock
 	if (prev_id != 0)
 	{
@@ -122,13 +131,17 @@ unsigned TaskDone(unsigned prev_id = 0)
 	// pick a new task
 	if (depends.unlocked)
 	{
-		for (i = 0; i < depends.locked_idx && task[depends.idx_list[i]].waiting_for_idx != 0; ++i)
+		// find the lower id task available
+		j = depends.end_idx;
+		for (i = 0; i < depends.locked_idx; ++i)
 		{
+			if (task[depends.idx_list[i]].waiting_for_idx == 0 && depends.idx_list[i] < j)
+				j = depends.idx_list[i];
 		}
 		--depends.unlocked;
 		--depends.locked_idx;
-		prev_id = depends.idx_list[i];
-		depends.idx_list[i] = depends.idx_list[depends.locked_idx];
+		prev_id = depends.idx_list[j];
+		depends.idx_list[j] = depends.idx_list[depends.locked_idx];
 		depends.idx_list[depends.locked_idx] = prev_id;
 	} else
 	{
@@ -142,4 +155,26 @@ unsigned TaskDone(unsigned prev_id = 0)
 	// spin unlock
 	return prev_id;
 }
+
+void Prepare(struct s_task* alltask, unsigned count)
+{
+	// fill dependencies structure
+	unsigned i;
+	for (i = 0; i < count; ++i)
+	{
+		depends.idx_list[i] = i+1;
+	}
+	// resolve dependencies
+	for (i = 0; i < count; ++i)
+	{
+
+	}
+}
+
+#ifdef TEST
+int main()
+{
+
+}
+#endif
 

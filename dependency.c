@@ -46,6 +46,8 @@
  *      Author: lester.crespo
  */
 
+#include <stdio.h>
+
 /**
  * Static struct holding all data
  */
@@ -187,6 +189,8 @@ void Prepare(struct s_task* alltask, unsigned count)
 				}
 			}
 		}
+		else
+			depends.waiting++;			// avoid bug,
 	}
 }
 
@@ -199,6 +203,7 @@ void WorkingThread()
 		if (task != 0)
 		{
 			// task doit
+			printf("%s done\n",task->name);
 		}
 		else
 		{
@@ -215,6 +220,7 @@ int main()
 	struct s_task list3[] = { { "a", 0 } };
 
 	Prepare(list1,sizeof(list1)/sizeof(*list1));
+	WorkingThread();
 
 }
 #endif

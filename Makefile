@@ -1,3 +1,4 @@
+#using build directory as . will produce circular reference
 
 # targets define different output targets.
 # common_cl				define common compiler flags for all targets

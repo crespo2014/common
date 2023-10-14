@@ -1,4 +1,8 @@
 #using build directory as . will produce circular reference
+<<<<<<< HEAD
+=======
+#using src_dirs as . will fail
+>>>>>>> e69b3c8 (update)
 
 # targets define different output targets.
 # common_cl				define common compiler flags for all targets
@@ -144,14 +148,14 @@ _FLAGS.tsan := -O1 -g  -fPIE -fno-omit-frame-pointer
 _CPPFLAGS.tsan := -fsanitize=thread
 
 # Compile with Clang specific runtime checks (http://clang.llvm.org/docs/UsersManual.html#controlling-code-generation)
-_FLAGS.clang := -O1 -g -fno-omit-frame-pointer
-_FLAGS.clang += -Wno-missing-noreturn -Wno-documentation-unknown-command -Weverything -Wno-padded -Wno-documentation
-_FLAGS.clang += -Wno-disabled-macro-expansion -Wno-unknown-warning-option -Wno-format-nonliteral $(CFLAGS_gcc)
-_CPPFLAGS.clang := -fsanitize=integer,undefined 
+clang_ := -O1 -g -fno-omit-frame-pointer
+clang_ += -Wno-missing-noreturn -Wno-documentation-unknown-command -Weverything -Wno-padded -Wno-documentation
+clang_ += -Wno-disabled-macro-expansion -Wno-unknown-warning-option -Wno-format-nonliteral $(CFLAGS_gcc)
+clang_cpp := -fsanitize=integer,undefined 
 
 #Compiler for profiling
-_FLAGS.profiler := -pg -O1
-_LDFLAGS.profiler := -pg -O1
+profiler_cpp := -pg -O1
+profiler_ld := -pg -O1
 
 #define a rule for each suffix
 $(foreach t,$(all_suffix),$(eval $(call suffix-rule,$(t))))
